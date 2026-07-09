@@ -1,0 +1,114 @@
+/* ============================================================
+   Prezzi Amazon — override su ui.css (stile gemma-portable)
+   Tema scuro: sfondo nero + sfumature verdi fluo
+   ============================================================ */
+
+/* ---------- Palette verde fluo (tema scuro) ---------- */
+html[data-theme="dark"]{
+  --accent:#00e676; --accent-soft:#0d3a24;
+  --side-active:#123a26; --user-bub:#14201a;
+  --grad-a:#00e676; --grad-b:#39ff14; --grad-c:#76ff03;
+}
+
+/* ---------- Sfondo nero + diffusione verde fluo ---------- */
+#galaxy{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;display:block}
+html[data-theme="dark"] body{
+  background:
+    radial-gradient(860px 660px at 82% -10%, rgba(0,230,118,.10), transparent 62%),
+    radial-gradient(780px 620px at 4% 110%, rgba(57,255,20,.07), transparent 60%),
+    radial-gradient(720px 560px at 50% 118%, rgba(255,255,255,.05), transparent 60%),
+    #000000 !important;
+}
+#sidebar,#main{position:relative;z-index:1}
+html[data-theme="dark"] #sidebar{background:rgba(6,8,7,.55);backdrop-filter:blur(12px)}
+html[data-theme="dark"] .composer-wrap{background:linear-gradient(180deg,transparent,rgba(0,0,0,.90) 42%)}
+html[data-theme="dark"] body.welcome .composer-wrap{background:none}
+html[data-theme="dark"] .pill{background:rgba(16,18,17,.92);backdrop-filter:blur(6px);box-shadow:0 2px 18px rgba(0,230,118,.12)}
+
+/* ---------- Icone a tema (verde fluo) ---------- */
+html[data-theme="dark"] #sidebar svg,
+html[data-theme="dark"] .topbar .icobtn svg,
+html[data-theme="dark"] .composer .icobtn svg{stroke:var(--accent)}
+.sendbtn svg{stroke:#06130c}
+html[data-theme="dark"] .pa-btn.primary,
+html[data-theme="dark"] .pa-btn.primary:hover{color:#06130c}
+
+/* impostazioni in alto a destra */
+.topbar .icobtn#navSettings{width:40px;height:40px}
+
+/* ---------- Brand / greeting ---------- */
+.brand span{background:linear-gradient(90deg,var(--grad-a),var(--grad-b),var(--grad-c));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600}
+.greet .sub{color:var(--muted);font-size:16px;margin-top:12px;line-height:1.5}
+.side-sub{font-size:13px;color:var(--muted);padding:3px 26px}
+.side-sub b{color:var(--txt);font-weight:600}
+
+/* avatar del bot con simbolo € */
+.msg.bot .who .eu{font-weight:800;color:#06130c;font-size:15px;line-height:1}
+html[data-theme="dark"] .msg.user .who{color:#06130c}
+.greet h1{
+  background:linear-gradient(95deg,var(--grad-a),var(--grad-b),var(--grad-c));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+
+/* voce di menu attiva */
+.navitem.active{background:var(--side-active)}
+.navitem.active .lbl{color:var(--txt)}
+
+/* ---------- Widget dell'assistente (dentro i messaggi) ---------- */
+.pa-title{font-size:16px;font-weight:600;margin-bottom:3px;color:var(--txt)}
+.pa-muted{color:var(--muted);font-size:13px}
+.pa-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:flex-end}
+.pa-btn{display:inline-flex;align-items:center;gap:7px;background:var(--side);color:var(--txt);border:1px solid var(--line);border-radius:18px;padding:8px 15px;font:inherit;font-size:13.5px;font-weight:500;cursor:pointer;transition:.15s}
+.pa-btn:hover{background:var(--side-hover);border-color:var(--accent);color:var(--accent)}
+.pa-btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.pa-btn.primary:hover{filter:brightness(1.08);color:#fff}
+.pa-btn.danger{background:transparent;color:var(--danger);border-color:var(--line)}
+.pa-btn.danger:hover{border-color:var(--danger);background:rgba(217,48,37,.10)}
+.pa-btn.sm{padding:5px 11px;font-size:12.5px}
+.pa-btn:disabled{opacity:.5;cursor:default}
+.pa-choice{display:flex;flex-wrap:wrap;gap:14px;margin-top:26px}
+body.welcome:not(.chatmode) .composer-wrap{display:none}
+/* composer flottante (vista chat/pannello): alzalo per non coprire il credito */
+body:not(.welcome) .composer-wrap{bottom:34px}
+.side-foot{margin-top:auto;padding:12px 16px 16px;font-size:11.5px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line)}
+.side-foot a{color:var(--accent);text-decoration:none;font-weight:600}
+.side-foot a:hover{text-decoration:underline}
+body.collapsed .side-foot{display:none}
+.pa-credit{position:fixed;left:0;right:0;bottom:0;z-index:20;text-align:center;padding:7px 16px 9px;font-size:12px;color:var(--muted);pointer-events:none}
+.pa-credit a{color:var(--accent);text-decoration:none;font-weight:600;pointer-events:auto}
+.pa-credit a:hover{text-decoration:underline}
+
+/* ---------- Vista sezione (pannelli a schermo intero, non chat) ---------- */
+body.secview .thread{max-width:960px;padding-top:24px}
+body.secview .msg{display:block;margin:0 0 16px}
+body.secview .msg .who{display:none}
+body.secview .msg.bot .content{padding:22px 24px;background:var(--side);border:1px solid var(--line);border-radius:18px}
+body.secview .msg.bot .content .pa-title{font-size:20px;margin-bottom:6px}
+body.secview .msg.bot .content .pa-muted{font-size:13.5px}
+.pa-choice-card{flex:1 1 220px;min-width:200px;text-align:left;background:var(--side);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;cursor:pointer;transition:.15s;color:var(--txt);box-shadow:0 0 0 rgba(0,230,118,0)}
+.pa-choice-card:hover{border-color:var(--accent);box-shadow:0 0 22px rgba(0,230,118,.28)}
+.pa-choice-card svg{width:26px;height:26px;stroke:var(--accent);margin-bottom:10px}
+.pa-choice-card .t{font-weight:600;font-size:16px;margin-bottom:4px}
+.pa-choice-card .d{color:var(--muted);font-size:13px;line-height:1.45}
+.pa-field{margin-top:10px}
+.pa-field label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px}
+.pa-chk{display:flex;align-items:center;gap:9px;font-size:14px;margin-top:12px;cursor:pointer;color:var(--txt)}
+.pa-chk input{width:16px;height:16px;accent-color:var(--accent)}
+.pa-input{width:100%;font:inherit;font-size:14px;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--field);outline:none;margin-top:3px}
+.pa-input:focus{border-color:var(--accent)}
+textarea.pa-input{resize:vertical;font-family:"Roboto Mono",Consolas,monospace;line-height:1.5}
+select.pa-input{appearance:none;-webkit-appearance:none}
+.pa-scroll{max-height:360px;overflow:auto;margin-top:10px}
+.pa-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.pa-table th,.pa-table td{border:1px solid var(--line);padding:7px 10px;text-align:left;white-space:nowrap}
+.pa-table th{color:var(--muted);font-weight:500;background:var(--side)}
+.pa-table td.hl,.pa-table th.hl{background:var(--accent-soft);color:var(--txt)}
+.pa-code{font-family:"Roboto Mono",Consolas,monospace;font-size:12.5px}
+.pa-lbl{width:100%;font:inherit;font-size:13px;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 9px;background:var(--field);outline:none}
+.pa-lbl:focus{border-color:var(--accent)}
+.pa-bar{height:8px;background:var(--side);border-radius:6px;overflow:hidden;margin:12px 0}
+.pa-bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--grad-a),var(--grad-b),var(--grad-c));transition:width .25s}
+.pa-log{font-family:"Roboto Mono",Consolas,monospace;font-size:12px;line-height:1.6;max-height:230px;overflow:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px;color:var(--txt);margin-top:8px}
+.pa-log .ok{color:#37d67a}.pa-log .warn{color:#f0b429}.pa-log .err{color:var(--danger)}.pa-log .info{color:#4aa3ff}
+.pa-mini{height:26px;vertical-align:middle}

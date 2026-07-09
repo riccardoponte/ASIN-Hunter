@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "ASIN Hunter",
+  "version": "3.0.0",
+  "description": "Raccoglie i prezzi di una lista di ASIN sulla tua sessione Amazon reale (localizzazione Italia) ed esporta un CSV datato.",
+  "permissions": ["tabs", "scripting", "downloads", "storage"],
+  "host_permissions": [
+    "*://*.amazon.it/*",
+    "*://*.amazon.de/*",
+    "*://*.amazon.es/*",
+    "*://*.amazon.fr/*",
+    "*://*.amazon.com/*",
+    "*://*.amazon.co.uk/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Apri ASIN Hunter (a tutto schermo)",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon.png"
+  }
+}
+
+
+

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prezzi Amazon</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300c853'/%3E%3Cstop offset='.5' stop-color='%2300e676'/%3E%3Cstop offset='1' stop-color='%2376ff03'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='2' width='20' height='20' rx='6' fill='url(%23g)'/%3E%3Ctext x='12' y='17' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='700' fill='white'%3E%E2%82%AC%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="ui.css" />
+<link rel="stylesheet" href="pa.css" />
+</head>
+<body class="collapsed welcome">
+  <canvas id="galaxy"></canvas>
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar">
+    <div class="side-top">
+      <button class="icobtn" id="toggleSide" title="Menu">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="brand hide-collapsed">
+        <svg viewBox="0 0 24 24" style="stroke:none"><defs><linearGradient id="pag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00c853"/><stop offset=".5" stop-color="#00e676"/><stop offset="1" stop-color="#76ff03"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#pag)"/><text x="12" y="17" text-anchor="middle" font-family="Google Sans,system-ui,sans-serif" font-size="14" font-weight="700" fill="#fff" style="stroke:none">&#8364;</text></svg>
+        <span>Assistente Prezzi</span>
+      </div>
+    </div>
+
+    <button class="navitem" id="navCollect">
+      <svg viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9 8.6-8.6a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v6a2 2 0 0 1-.4 1.6z"/><circle cx="16.5" cy="7.5" r="1.5"/></svg>
+      <span class="lbl">Raccogli prezzi</span>
+    </button>
+
+    <button class="navitem" id="navAsin">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span class="lbl">Gestione ASIN</span>
+    </button>
+
+    <button class="navitem" id="navHistory">
+      <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+      <span class="lbl">Storico</span>
+    </button>
+
+    <div class="side-scroll" id="sideScroll">
+      <div class="side-label">Riepilogo</div>
+      <div id="paSummary">
+        <div class="side-sub"><b id="pa-asincount">0 ASIN</b> in lista</div>
+        <div class="side-sub" id="pa-loc">Consegna: Italia</div>
+      </div>
+    </div>
+
+  </aside>
+  <div id="ov"></div>
+
+  <!-- ================= MAIN ================= -->
+  <div id="main">
+    <div class="topbar">
+      <button class="icobtn" id="navHome" title="Home">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+      </button>
+      <div class="model-pill" id="modelPill" style="cursor:default">
+        <span style="width:8px;height:8px;border-radius:50%;background:#37d67a;display:inline-block"></span>
+        <span id="modelLabel">Sessione Amazon &middot; Italia</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="icobtn" id="navSettings" title="Impostazioni">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <div id="scroll">
+      <div class="thread" id="thread">
+        <div class="greet">
+          <h1>Come posso aiutarti?</h1>
+          <div class="sub">Scegli come iniziare</div>
+          <div class="pa-choice">
+            <button class="pa-choice-card" id="modeChat">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <div class="t">Modalit&agrave; chat</div>
+              <div class="d">Scrivi comandi o incolla gli ASIN liberamente.</div>
+            </button>
+            <button class="pa-choice-card" id="modeAsin">
+              <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              <div class="t">ASIN importati</div>
+              <div class="d">Analizza subito gli ASIN gi&agrave; salvati o importati.</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <div class="pill">
+          <div class="pill-row">
+            <button class="icobtn" id="uploadBtn" title="Importa file .xlsx / .csv">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v13"/></svg>
+            </button>
+            <textarea id="input" rows="1" placeholder=""></textarea>
+            <button class="sendbtn" id="send" title="Invia">
+              <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pa-credit">
+      Estensione creata da
+      <a href="https://www.linkedin.com/in/riccardo-ponte/" target="_blank" rel="noopener noreferrer">Riccardo Ponte</a>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept=".xlsx,.csv,.tsv,.txt" style="display:none" />
+
+  <script src="xlsx.js"></script>
+  <script src="app.js?v=63"></script>
+</body>
+</html>
