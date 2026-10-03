@@ -1,0 +1,209 @@
+(function() {
+  if (!location.hostname.includes("amazon.")) {
+    alert("Apri questo script mentre ti trovi su Amazon (es. https://www.amazon.it)");
+    return;
+  }
+
+  // Rimuovi eventuale istanza precedente
+  const old = document.getElementById("pa-floating-scraper");
+  if (old) old.remove();
+
+  // 1. Creazione Interfaccia Grafica Sovrapposta
+  const box = document.createElement("div");
+  box.id = "pa-floating-scraper";
+  box.style.cssText = `
+    position: fixed; top: 30px; right: 30px; width: 480px; max-height: 85vh;
+    background: #111827; color: #f3f4f6; z-index: 9999999; border-radius: 14px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.6); border: 1px solid #374151;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; overflow: hidden; font-size: 13px;
+  `;
+
+  box.innerHTML = `
+    <div style="background:#1f2937; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #374151;">
+      <b style="font-size:15px; color:#10b981; display:flex; align-items:center; gap:6px;">
+        🛒 Amazon Price Hunter
+      </b>
+      <button id="pa-close" style="background:none; border:none; color:#9ca3af; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    
+    <div style="padding:14px; overflow-y:auto; flex:1;">
+      <label style="display:block; font-size:12px; color:#9ca3af; margin-bottom:5px;">Incolla qui gli ASIN (separati da spazio o riga):</label>
+      <textarea id="pa-input" rows="3" style="width:100%; box-sizing:border-box; background:#1f2937; color:#fff; border:1px solid #4b5563; border-radius:8px; padding:8px; font-family:monospace; resize:vertical;">B0GM1TVSMG</textarea>
+      
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="pa-start" style="flex:1; background:#10b981; color:#fff; font-weight:600; padding:9px 12px; border:none; border-radius:8px; cursor:pointer; transition:0.2s;">
+          ▶ Avvia Scansione
+        </button>
+        <button id="pa-download" style="background:#374151; color:#9ca3af; padding:9px 14px; border:none; border-radius:8px; cursor:not-allowed;" disabled>
+          📥 Scarica CSV
+        </button>
+      </div>
+
+      <div id="pa-status" style="margin-top:10px; font-size:12px; color:#9ca3af; min-height:16px;"></div>
+
+      <div style="margin-top:10px; max-height:260px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
+          <thead style="background:#1f2937; position:sticky; top:0; color:#9ca3af;">
+            <tr>
+              <th style="padding:7px 10px;">ASIN</th>
+              <th style="padding:7px 10px;">Prezzo</th>
+              <th style="padding:7px 10px;">Variante</th>
+              <th style="padding:7px 10px;">Titolo</th>
+            </tr>
+          </thead>
+          <tbody id="pa-results">
+            <tr><td colspan="4" style="padding:15px; text-align:center; color:#6b7280;">Nessun dato ancora raccolto</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(box);
+
+  // Chiusura
+  document.getElementById("pa-close").onclick = () => box.remove();
+
+  // Dati raccolti
+  let collectedData = [];
+
+  // 2. Motore di Estrazione dal Document HTML
+  function extractPriceFromDoc(doc) {
+    // 1. Cerca nei blocchi prezzo standard
+    const priceSelectors = [
+      "#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen",
+      "#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen",
+      "#apex_desktop .priceToPay .a-offscreen",
+      "#apex_desktop .a-price:not(.a-text-price) .a-offscreen",
+      "#priceblock_ourprice",
+      "#priceblock_dealprice",
+      "#price_inside_buybox",
+      "#buybox .a-price .a-offscreen"
+    ];
+
+    for (let sel of priceSelectors) {
+      const el = doc.querySelector(sel);
+      if (el && el.textContent.trim()) {
+        const val = el.textContent.trim();
+        if (/\d/.test(val)) return val;
+      }
+    }
+
+    // 2. Assemblaggio manuale Intero + Centesimi (Risolve il problema della TV)
+    const whole = doc.querySelector(".priceToPay .a-price-whole, #corePriceDisplay_desktop_feature_div .a-price-whole, #apex_desktop .a-price-whole");
+    const fraction = doc.querySelector(".priceToPay .a-price-fraction, #corePriceDisplay_desktop_feature_div .a-price-fraction, #apex_desktop .a-price-fraction");
+    if (whole) {
+      const w = whole.textContent.replace(/[^\d]/g, '');
+      const f = fraction ? fraction.textContent.replace(/[^\d]/g, '') : '00';
+      return `${w},${f} €`;
+    }
+
+    // 3. Fallback disponibilità
+    const avail = doc.querySelector("#availability, #buybox");
+    const availText = avail ? avail.innerText : "";
+    if (/Attualmente non disponibile|Non disponibile/i.test(availText)) {
+      return "Non disponibile";
+    }
+
+    return "N/D";
+  }
+
+  // 3. Esecuzione scansione
+  document.getElementById("pa-start").onclick = async function() {
+    const rawInput = document.getElementById("pa-input").value;
+    const asins = [...new Set(rawInput.toUpperCase().match(/[A-Z0-9]{10}/g) || [])];
+
+    if (!asins.length) {
+      alert("Inserisci almeno un ASIN valido di 10 caratteri!");
+      return;
+    }
+
+    const btnStart = document.getElementById("pa-start");
+    const btnDown = document.getElementById("pa-download");
+    const statusDiv = document.getElementById("pa-status");
+    const tbody = document.getElementById("pa-results");
+
+    btnStart.disabled = true;
+    btnStart.style.opacity = "0.5";
+    btnDown.disabled = true;
+    tbody.innerHTML = "";
+    collectedData = [];
+
+    for (let i = 0; i < asins.length; i++) {
+      const asin = asins[i];
+      statusDiv.innerHTML = `Controllo [${i + 1}/${asins.length}]: <b style="color:#10b981;">${asin}</b>...`;
+
+      try {
+        const url = `/dp/${asin}?th=1&psc=1`;
+        const res = await fetch(url, { credentials: "include" });
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+
+        // Titolo
+        const titleEl = doc.querySelector("#productTitle");
+        const title = titleEl ? titleEl.textContent.trim().substring(0, 50) : "";
+
+        // Variante
+        const varDims = [...doc.querySelectorAll(".inline-twister-dim-title-value")].map(e => e.textContent.trim());
+        let variant = varDims.join(" / ");
+        if (!variant) {
+          const selVar = doc.querySelector("#variation_size_name .selection, #variation_color_name .selection");
+          variant = selVar ? selVar.textContent.trim() : "";
+        }
+
+        // Prezzo
+        const price = extractPriceFromDoc(doc);
+
+        collectedData.push({ asin, price, variant, title, url: location.origin + url });
+
+        // Aggiungi riga alla tabella a video
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #374151";
+        tr.innerHTML = `
+          <td style="padding:6px 10px; font-family:monospace; color:#60a5fa;">${asin}</td>
+          <td style="padding:6px 10px; font-weight:bold; color:#34d399;">${price}</td>
+          <td style="padding:6px 10px; color:#d1d5db;">${variant || "-"}</td>
+          <td style="padding:6px 10px; color:#9ca3af;" title="${title}">${title || "-"}</td>
+        `;
+        tbody.appendChild(tr);
+
+      } catch (err) {
+        collectedData.push({ asin, price: "Errore", variant: "", title: "", url: "" });
+      }
+
+      // Pausa prudenziale (1.2 secondi) tra le chiamate
+      if (i < asins.length - 1) {
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+
+    statusDiv.innerHTML = `✔ <b style="color:#10b981;">Scansione completata!</b> (${collectedData.length} prodotti)`;
+    btnStart.disabled = false;
+    btnStart.style.opacity = "1";
+    btnDown.disabled = false;
+    btnDown.style.background = "#2563eb";
+    btnDown.style.color = "#fff";
+    btnDown.style.cursor = "pointer";
+  };
+
+  // 4. Download CSV (formato compatibile con Excel italiano: ; e BOM UTF-8)
+  document.getElementById("pa-download").onclick = function() {
+    if (!collectedData.length) return;
+
+    let csv = "\uFEFFASIN;Prezzo;Variante;Titolo;URL\r\n";
+    for (let r of collectedData) {
+      const escape = (t) => `"${String(t || "").replace(/"/g, '""')}"`;
+      csv += `${escape(r.asin)};${escape(r.price)};${escape(r.variant)};${escape(r.title)};${escape(r.url)}\r\n`;
+    }
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = u;
+    a.download = `prezzi_amazon_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+})();
